@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -14,11 +13,6 @@ import (
 
 	"github.com/gokrazy/internal/rootdev"
 )
-
-//go:embed third_party/e2fsprogs-1.46.2-2/*
-var mke2fsEmbedded embed.FS
-
-const mke2fsroot = "third_party/e2fsprogs-1.46.2-2"
 
 func makeFilesystemNotWar() error {
 	b, err := os.ReadFile("/proc/self/mountinfo")
@@ -48,19 +42,11 @@ func makeFilesystemNotWar() error {
 	defer os.RemoveAll(tmp)
 
 	log.Printf("Writing self-contained mke2fs to %s", tmp)
-	dirents, err := mke2fsEmbedded.ReadDir(mke2fsroot)
-	for _, d := range dirents {
-		b, err := mke2fsEmbedded.ReadFile(filepath.Join(mke2fsroot, d.Name()))
-		if err != nil {
-			return err
-		}
-		fn := filepath.Join(tmp, d.Name())
-		if err := os.WriteFile(fn, b, 755); err != nil {
-			return err
-		}
+
+	if err := ioutil.WriteFile(filepath.Join(tmp, "mke2fs"), mke2fs, 0755); err != nil {
+		return err
 	}
-	mkfs := exec.Command(filepath.Join(tmp, "ld-linux-aarch64.so.1"), filepath.Join(tmp, "mke2fs"), "-t", "ext4", dev)
-	mkfs.Env = append(os.Environ(), "LD_LIBRARY_PATH="+tmp)
+	mkfs := exec.Command(filepath.Join(tmp, "mke2fs"), "-t", "ext4", dev)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	log.Printf("%v", mkfs.Args)
