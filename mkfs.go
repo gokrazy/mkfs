@@ -63,7 +63,12 @@ func makeFilesystemNotWar() error {
 		return fmt.Errorf("could read neither /perm/gokr-pw.txt, nor /etc/gokr-pw.txt, nor /gokr-pw.txt: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost/reboot", nil)
+	port, err := ioutil.ReadFile("/etc/http-port.txt")
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:"+string(port)+"/reboot", nil)
 	if err != nil {
 		return err
 	}
