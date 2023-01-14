@@ -10,16 +10,10 @@ copy](https://github.com/gokrazy/freeze) of the `mke2fs` program from the
 
 ## Usage
 
-You can either include this program in your `gokr-packer` command line:
+You can either add this program to your gokrazy instance:
 
 ```
-gokr-packer \
-  -overwrite=/dev/sdx \
-  -serial_console=disabled \
-  github.com/gokrazy/fbstatus \
-  github.com/gokrazy/hello \
-  github.com/gokrazy/serial-busybox \
-  github.com/gokrazy/mkfs
+gok add github.com/gokrazy/mkfs
 ```
 
 …or, if you want to run it only once without otherwise including it in your
@@ -28,7 +22,7 @@ installation, you can use `gok run`:
 ```
 git clone https://github.com/gokrazy/mkfs
 cd mkfs
-gok run -i bakery
+gok -i bakery run
 ```
 
 
