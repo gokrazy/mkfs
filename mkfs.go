@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/gokrazy/internal/rootdev"
@@ -35,18 +34,8 @@ func makeFilesystemNotWar() error {
 	// /perm is not a mounted file system. Try to create a file system.
 	dev := rootdev.Partition(rootdev.Perm)
 	log.Printf("No /perm mountpoint found. Creating file system on %s", dev)
-	tmp, err := os.MkdirTemp("", "gokrazy-mkfs-")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmp)
 
-	log.Printf("Writing self-contained mke2fs to %s", tmp)
-
-	if err := ioutil.WriteFile(filepath.Join(tmp, "mke2fs"), mke2fs, 0755); err != nil {
-		return err
-	}
-	mkfs := exec.Command(filepath.Join(tmp, "mke2fs"), "-t", "ext4", dev)
+	mkfs := exec.Command("/usr/local/bin/mke2fs", "-t", "ext4", dev)
 	mkfs.Stdout = os.Stdout
 	mkfs.Stderr = os.Stderr
 	log.Printf("%v", mkfs.Args)

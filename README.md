@@ -4,9 +4,8 @@ This program is intended to be run on gokrazy only, where it will create an ext4
 file system on the perm partition and then reboot your system. If `/perm` is
 already mounted, the program will exit without changing anything.
 
-The gokrazy mkfs program includes a [frozen
-copy](https://github.com/gokrazy/freeze) of the `mke2fs` program from the
-`e2fsprogs` package from Debian.
+The gokrazy mkfs program includes a static build of the `mke2fs` and `e2fsck`
+programs from the `e2fsprogs` package.
 
 ## Usage
 
