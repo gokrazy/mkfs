@@ -1,6 +1,6 @@
 module github.com/gokrazy/mkfs
 
-go 1.17
+go 1.24
 
 require github.com/gokrazy/internal v0.0.0-20210621162516-1b3b5687a06d
 
