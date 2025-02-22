@@ -1,15 +1,15 @@
 package main
 
 import (
-	"encoding/base64"
+	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 
+	"github.com/gokrazy/gokapi"
+	"github.com/gokrazy/gokapi/ondeviceapi"
 	"github.com/gokrazy/internal/rootdev"
 )
 
@@ -47,46 +47,18 @@ func makeFilesystemNotWar() error {
 	// process, as gokrazy services are run in a separate mount namespace.
 	// Instead, we trigger a reboot so that /perm is mounted early and
 	// the whole system picks it up correctly.
-	httpPassword, err := readConfigFile("gokr-pw.txt")
-	if err != nil {
-		return fmt.Errorf("could read neither /perm/gokr-pw.txt, nor /etc/gokr-pw.txt, nor /gokr-pw.txt: %v", err)
-	}
-
-	port, err := ioutil.ReadFile("/etc/http-port.txt")
+	log.Printf("triggering reboot to mount /perm")
+	cfg, err := gokapi.ConnectOnDevice()
 	if err != nil {
 		return err
 	}
-
-	req, err := http.NewRequest("POST", "http://localhost:"+string(port)+"/reboot", nil)
+	cl := ondeviceapi.NewAPIClient(cfg)
+	_, err = cl.UpdateApi.Reboot(context.Background(), &ondeviceapi.UpdateApiRebootOpts{})
 	if err != nil {
 		return err
-	}
-	req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("gokrazy:"+httpPassword)))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	if got, want := resp.StatusCode, http.StatusOK; got != want {
-		return fmt.Errorf("rebooting device: unexpected HTTP status code: got %d, want %d", got, want)
 	}
 
 	return nil
-}
-
-// readConfigFile reads configuration files from /perm /etc or / and returns
-// trimmed content as string.
-//
-// TODO: de-duplicate this with gokrazy.go into a gokrazy/internal package
-func readConfigFile(fileName string) (string, error) {
-	str, err := ioutil.ReadFile("/perm/" + fileName)
-	if err != nil {
-		str, err = ioutil.ReadFile("/etc/" + fileName)
-	}
-	if err != nil && os.IsNotExist(err) {
-		str, err = ioutil.ReadFile("/" + fileName)
-	}
-
-	return strings.TrimSpace(string(str)), err
 }
 
 func main() {
